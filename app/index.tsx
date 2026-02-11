@@ -51,7 +51,6 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     width: 250,
     alignItems: "center",
-    // 添加一点阴影，让它看起来更像真 App
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
