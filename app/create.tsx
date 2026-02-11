@@ -1,6 +1,9 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker'; // Hardware API for Camera
+import { useRouter } from "expo-router";
 import React, { useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+
 
 export default function CreateScreen() {
   // R2.1: State for text inputs
@@ -9,6 +12,7 @@ export default function CreateScreen() {
   
   // R8.1: State to store the URI of the taken photo
   const [image, setImage] = useState<string | null>(null);
+  const router = useRouter();
 
   // R8.1: Function to trigger the device camera
   const takePhoto = async () => {
@@ -31,15 +35,39 @@ export default function CreateScreen() {
       setImage(result.assets[0].uri); // Save the image path to state
     }
   };
+const handleSave = async () => {
+  if (!name || !image) {
+    Alert.alert("Missing Info", "Please provide a name and a photo!");
+    return;
+  }
 
-  const handleSave = () => {
-    if (!name || !image) {
-      Alert.alert("Missing Info", "Please provide a name and take a photo! [R8.1]");
-      return;
-    }
-    console.log("Saving Item:", { name, description, image });
-    Alert.alert("Success", "Item data is ready to be saved locally!");
-  };
+  try {
+    // 1. Create the new item object
+    const newItem = {
+      id: Date.now().toString(), // Unique ID based on time
+      name: name,
+      description: description,
+      image: image,
+    };
+
+    // 2. Get existing items from storage
+    const existingData = await AsyncStorage.getItem('stored_items');
+    let itemsArray = existingData ? JSON.parse(existingData) : [];
+
+    // 3. Add new item to the array
+    itemsArray.push(newItem);
+
+    // 4. Save the updated array back to storage
+    await AsyncStorage.setItem('stored_items', JSON.stringify(itemsArray));
+
+    Alert.alert("Success", "Item saved successfully!", [
+      { text: "OK", onPress: () => router.back() } // Go back to home screen after saving
+    ]);
+  } catch (error) {
+    Alert.alert("Error", "Failed to save item.");
+    console.error(error);
+  }
+};
 
   return (
     <ScrollView style={styles.container}>
