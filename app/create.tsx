@@ -9,6 +9,7 @@ export default function CreateScreen() {
   // R2.1: State for text inputs
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [location, setLocation] = useState<string | null>(null);
   
   // R8.1: State to store the URI of the taken photo
   const [image, setImage] = useState<string | null>(null);

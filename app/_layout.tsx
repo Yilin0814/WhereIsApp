@@ -9,6 +9,7 @@ export default function RootLayout() {
           title: "Add New Item",
         }} 
       />
+      <Stack.Screen name="details" options={{ title: "Item Details" }} />
     </Stack>
     
   );

@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'; // R4.1: Fetching persisted data
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ListScreen() {
+  const router = useRouter();
   const [items, setItems] = useState([]);
   const deleteItem = async (id: string) => {
     Alert.alert(
@@ -50,7 +51,12 @@ export default function ListScreen() {
 
   // R3.1: Component to render each individual item in the list
   const renderItem = ({ item }: { item: any }) => (
-    <View style={styles.itemCard}>
+    <TouchableOpacity style={styles.itemCard}
+    onPress={() => router.push({
+      pathname: "/details",
+      params: { name: item.name, description: item.description, image: item.image }
+    })}
+    >
       <Image source={{ uri: item.image }} style={styles.itemImage} />
       <View style={styles.itemInfo}>
         <Text style={styles.itemName}>{item.name}</Text>
@@ -59,7 +65,7 @@ export default function ListScreen() {
             <Text style={styles.deleteButtonText}>Delete</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
