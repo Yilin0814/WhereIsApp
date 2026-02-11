@@ -1,106 +1,74 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as ImagePicker from 'expo-image-picker'; // Hardware API for Camera
-import { useRouter } from "expo-router";
+import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location'; // R2.1: Import for GPS
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
-
+import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function CreateScreen() {
-  // R2.1: State for text inputs
+  const router = useRouter();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [location, setLocation] = useState<string | null>(null);
-  
-  // R8.1: State to store the URI of the taken photo
   const [image, setImage] = useState<string | null>(null);
-  const router = useRouter();
+  const [coords, setCoords] = useState<string>('Not fetched yet'); // R2.1 State
 
-  // R8.1: Function to trigger the device camera
-  const takePhoto = async () => {
-    // Request camera permissions
-    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+  // R2.1: Function to get GPS coordinates
+  const getLocation = async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync(); // This is the line that was erroring
+      if (status !== 'granted') {
+        Alert.alert("Permission Denied", "Location access is required for this app.");
+        return;
+      }
 
-    if (permissionResult.granted === false) {
-      Alert.alert("Permission Denied", "You need to allow camera access to take a photo!");
-      return;
-    }
-
-    // Launch the camera
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.5, // Compressed for easier storage later
-    });
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri); // Save the image path to state
+      let location = await Location.getCurrentPositionAsync({});
+      const currentCoords = `${location.coords.latitude.toFixed(4)}, ${location.coords.longitude.toFixed(4)}`;
+      setCoords(currentCoords);
+    } catch (error) {
+      Alert.alert("Error", "Could not fetch location.");
     }
   };
-const handleSave = async () => {
-  if (!name || !image) {
-    Alert.alert("Missing Info", "Please provide a name and a photo!");
-    return;
-  }
 
-  try {
-    // 1. Create the new item object
-    const newItem = {
-      id: Date.now().toString(), // Unique ID based on time
-      name: name,
-      description: description,
-      image: image,
-    };
+  const takePhoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) return;
+    const result = await ImagePicker.launchCameraAsync({ quality: 0.5 });
+    if (!result.canceled) setImage(result.assets[0].uri);
+  };
 
-    // 2. Get existing items from storage
-    const existingData = await AsyncStorage.getItem('stored_items');
-    let itemsArray = existingData ? JSON.parse(existingData) : [];
-
-    // 3. Add new item to the array
-    itemsArray.push(newItem);
-
-    // 4. Save the updated array back to storage
-    await AsyncStorage.setItem('stored_items', JSON.stringify(itemsArray));
-
-    Alert.alert("Success", "Item saved successfully!", [
-      { text: "OK", onPress: () => router.back() } // Go back to home screen after saving
-    ]);
-  } catch (error) {
-    Alert.alert("Error", "Failed to save item.");
-    console.error(error);
-  }
-};
+  const handleSave = async () => {
+    if (!name || !image || coords === 'Not fetched yet') {
+      Alert.alert("Error", "Please provide name, photo, and coordinates! [R2.1]");
+      return;
+    }
+    const newItem = { id: Date.now().toString(), name, description, image, location: coords };
+    const data = await AsyncStorage.getItem('stored_items');
+    const items = data ? JSON.parse(data) : [];
+    items.push(newItem);
+    await AsyncStorage.setItem('stored_items', JSON.stringify(items));
+    router.back();
+  };
 
   return (
     <ScrollView style={styles.container}>
-      {/* R2.1: Item Name Input */}
       <Text style={styles.label}>Item Name:</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="e.g., Office Laptop"
-        value={name}
-        onChangeText={setName}
-      />
+      <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Name" />
 
-      {/* R2.1: Description Input */}
-      <Text style={styles.label}>Description / Location:</Text>
-      <TextInput
-        style={[styles.input, styles.textArea]}
-        placeholder="e.g., Hidden in the bottom drawer"
-        value={description}
-        onChangeText={setDescription}
-        multiline
-      />
+      {/* R2.1 Location UI based on your sketch */}
+      <View style={styles.locationBox}>
+        <Text style={styles.locationText}>Coordinates: {coords}</Text>
+        <TouchableOpacity style={styles.locButton} onPress={getLocation}>
+          <Text style={{color: 'white'}}>Get GPS 📍</Text>
+        </TouchableOpacity>
+      </View>
 
-      {/* R8.1: Camera Section */}
-      <Text style={styles.label}>Item Photo:</Text>
-      {image && <Image source={{ uri: image }} style={styles.previewImage} />}
-      
       <TouchableOpacity style={styles.cameraButton} onPress={takePhoto}>
-        <Text style={styles.buttonText}>{image ? "Retake Photo 📷" : "Take Photo 📷"}</Text>
+        <Text style={{color: 'white'}}>{image ? "Change Photo" : "Take Photo 📷"}</Text>
       </TouchableOpacity>
+      {image && <Image source={{ uri: image }} style={styles.preview} />}
 
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.buttonText}>Save Item</Text>
+        <Text style={{color: 'white', fontWeight: 'bold'}}>Save Item</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -108,11 +76,12 @@ const handleSave = async () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  label: { fontSize: 16, fontWeight: 'bold', marginTop: 15, marginBottom: 5 },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, fontSize: 16 },
-  textArea: { height: 80, textAlignVertical: 'top' },
-  previewImage: { width: '100%', height: 200, borderRadius: 10, marginVertical: 10 },
-  cameraButton: { backgroundColor: '#6c757d', padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 10 },
-  saveButton: { backgroundColor: '#28a745', padding: 15, borderRadius: 8, marginTop: 30, marginBottom: 50, alignItems: 'center' },
-  buttonText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+  label: { fontSize: 16, fontWeight: 'bold', marginTop: 15 },
+  input: { borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 8, marginTop: 5 },
+  locationBox: { padding: 15, backgroundColor: '#f0f0f0', borderRadius: 10, marginTop: 20, alignItems: 'center' },
+  locationText: { fontSize: 14, marginBottom: 10, fontWeight: '600' },
+  locButton: { backgroundColor: '#007AFF', padding: 8, borderRadius: 5 },
+  cameraButton: { backgroundColor: '#555', padding: 15, borderRadius: 8, marginTop: 20, alignItems: 'center' },
+  preview: { width: '100%', height: 200, marginTop: 10, borderRadius: 10 },
+  saveButton: { backgroundColor: '#28a745', padding: 15, borderRadius: 8, marginTop: 30, alignItems: 'center', marginBottom: 50 }
 });
