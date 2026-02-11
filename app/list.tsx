@@ -1,11 +1,35 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'; // R4.1: Fetching persisted data
 import { useFocusEffect } from 'expo-router';
 import React, { useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ListScreen() {
   const [items, setItems] = useState([]);
-
+  const deleteItem = async (id: string) => {
+    Alert.alert(
+        "Delete Item",
+        "Are you sure you want to remove this item?",
+        [
+        { text: "Cancel", style: "cancel" },
+        { 
+            text: "Delete", 
+            style: "destructive", 
+            onPress: async () => {
+            try {
+                // R2.2: Filter out the item with the matching ID
+                const updatedItems = items.filter((item: any) => item.id !== id);
+                setItems(updatedItems); // Update UI
+                
+                // R4.1: Save the new list back to storage
+                await AsyncStorage.setItem('stored_items', JSON.stringify(updatedItems));
+            } catch (error) {
+                console.error("Failed to delete item", error);
+            }
+            } 
+        }
+        ]
+    );
+  };
   // Refresh the list every time the user navigates to this screen
   useFocusEffect(
     React.useCallback(() => {
@@ -30,7 +54,10 @@ export default function ListScreen() {
       <Image source={{ uri: item.image }} style={styles.itemImage} />
       <View style={styles.itemInfo}>
         <Text style={styles.itemName}>{item.name}</Text>
-        <Text style={styles.itemDesc} numberOfLines={2}>{item.description}</Text>
+        <Text style={styles.itemDesc} numberOfLines={1}>{item.description}</Text>
+        <TouchableOpacity style={styles.deleteButton} onPress={() => deleteItem(item.id)}>
+            <Text style={styles.deleteButtonText}>Delete</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -75,4 +102,13 @@ const styles = StyleSheet.create({
   itemDesc: { fontSize: 14, color: '#666', marginTop: 4 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { fontSize: 16, color: '#999' },
+  deleteButton: {
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  deleteButtonText: {
+    color: '#FF3B30', // iOS standard red
+    fontWeight: '600',
+    fontSize: 14,
+  },
 });
