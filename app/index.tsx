@@ -1,6 +1,10 @@
+import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Index() {
+
+  const router = useRouter();// init router
+
   return (
     <View style={styles.container}>
       {/* R1.1:  Title */}
@@ -9,7 +13,8 @@ export default function Index() {
       {/* R1.1: Add New Item  */}
       <TouchableOpacity 
         style={styles.button} 
-        onPress={() => console.log("Clicked Add New Item")}
+        onPress={() => router.push("/create")}
+        // onPress={() => console.log("Clicked Add New Item")}
       >
         <Text style={styles.buttonText}>Add New Item</Text>
       </TouchableOpacity>
