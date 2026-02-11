@@ -22,7 +22,8 @@ export default function Index() {
       {/* R1.1: List Items  */}
       <TouchableOpacity 
         style={styles.button}
-        onPress={() => console.log("Clicked List Items")}
+        onPress={() => router.push("/list")}
+        // onPress={() => console.log("Clicked List Items")}
       >
         <Text style={styles.buttonText}>List Items</Text>
       </TouchableOpacity>
