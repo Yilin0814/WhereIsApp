@@ -15,7 +15,7 @@ export default function DetailsScreen() {
         <Text style={styles.title}>{name}</Text>
         <View style={styles.divider} />
         
-        <Text style={styles.label}>Location / Description:</Text>
+        <Text style={styles.label}>Description:</Text>
         <Text style={styles.description}>{description || "No description provided."}</Text>
       </View>
     </ScrollView>

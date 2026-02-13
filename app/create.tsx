@@ -38,7 +38,7 @@ export default function CreateScreen() {
 
   const handleSave = async () => {
     if (!name || !image || coords === 'Not fetched yet') {
-      Alert.alert("Error", "Please provide name, photo, and coordinates! [R2.1]");
+      Alert.alert("Error", "Please provide name, photo, and coordinates!");
       return;
     }
     const newItem = { id: Date.now().toString(), name, description, image, location: coords };
@@ -53,7 +53,15 @@ export default function CreateScreen() {
     <ScrollView style={styles.container}>
       <Text style={styles.label}>Item Name:</Text>
       <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Name" />
-
+      {/* R2.1: Description Input */}
+      <Text style={styles.label}>Description:</Text>
+      <TextInput
+        style={[styles.input, styles.textArea]}
+        placeholder="e.g., Hidden in the bottom drawer"
+        value={description}
+        onChangeText={setDescription}
+        multiline
+      />
       {/* R2.1 Location UI based on your sketch */}
       <View style={styles.locationBox}>
         <Text style={styles.locationText}>Coordinates: {coords}</Text>
@@ -78,6 +86,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
   label: { fontSize: 16, fontWeight: 'bold', marginTop: 15 },
   input: { borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 8, marginTop: 5 },
+  textArea: { height: 80, textAlignVertical: 'top' },
   locationBox: { padding: 15, backgroundColor: '#f0f0f0', borderRadius: 10, marginTop: 20, alignItems: 'center' },
   locationText: { fontSize: 14, marginBottom: 10, fontWeight: '600' },
   locButton: { backgroundColor: '#007AFF', padding: 8, borderRadius: 5 },
