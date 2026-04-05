@@ -76,11 +76,12 @@ export default function ListScreen() {
       style={styles.itemCard}
       onPress={() => router.push({
         pathname: "/details",
-        params: { 
-          name: item.name, 
-          description: item.description, 
+        params: {
+          id: item.id,
+          name: item.name,
+          description: item.description,
           image: item.image,
-          location: item.location // Passing GPS coordinates to details
+          location: item.location
         }
       })}
     >

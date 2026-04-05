@@ -10,6 +10,7 @@ export default function RootLayout() {
         }} 
       />
       <Stack.Screen name="details" options={{ title: "Item Details" }} />
+      <Stack.Screen name="edit" options={{ title: "Edit Item" }} />
     </Stack>
     
   );
