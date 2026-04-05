@@ -37,16 +37,20 @@ export default function CreateScreen() {
   };
 
   const handleSave = async () => {
-    if (!name || !image || coords === 'Not fetched yet') {
-      Alert.alert("Error", "Please provide name, photo, and coordinates!");
+    if (!name || !description) {
+      Alert.alert("Error", "Name and description are required!");
       return;
     }
-    const newItem = { id: Date.now().toString(), name, description, image, location: coords };
-    const data = await AsyncStorage.getItem('stored_items');
-    const items = data ? JSON.parse(data) : [];
-    items.push(newItem);
-    await AsyncStorage.setItem('stored_items', JSON.stringify(items));
-    router.back();
+    try {
+      const newItem = { id: Date.now().toString(), name, description, image, location: coords };
+      const data = await AsyncStorage.getItem('stored_items');
+      const items = data ? JSON.parse(data) : [];
+      items.push(newItem);
+      await AsyncStorage.setItem('stored_items', JSON.stringify(items));
+      router.back();
+    } catch (error) {
+      Alert.alert("Error", "Storing of the record failed!");
+    }
   };
 
   return (

@@ -4,7 +4,7 @@ import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function DetailsScreen() {
   // R3.3: Get the item data passed through the URL parameters
-  const { name, description, image } = useLocalSearchParams();
+  const { name, description, image, location } = useLocalSearchParams();
 
   return (
     <ScrollView style={styles.container}>
@@ -17,6 +17,13 @@ export default function DetailsScreen() {
         
         <Text style={styles.label}>Description:</Text>
         <Text style={styles.description}>{description || "No description provided."}</Text>
+
+        {location ? (
+          <>
+            <Text style={styles.label}>GPS Location:</Text>
+            <Text style={styles.description}>📍 {location}</Text>
+          </>
+        ) : null}
       </View>
     </ScrollView>
   );
